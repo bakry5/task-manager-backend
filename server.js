@@ -5,6 +5,8 @@ const morgan = require('morgan');
 
 dotenv.config({ path: '.env' });
 
+const ApiError = require('./utils/apiError');
+const globalError = require('./middlewares/errorMiddleware');
 const dbConnection = require('./config/database');
 
 if (process.env.NODE_ENV !== 'test') {
@@ -19,6 +21,12 @@ app.use(express.json());
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
+
+app.all('*', (req, res, next) => {
+  next(new ApiError(`Can't find this route: ${req.originalUrl}`, 400));
+});
+
+app.use(globalError);
 
 const PORT = process.env.PORT || 8000;
 
