@@ -1,6 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const Project = require('../models/projectModel');
 const Task = require('../models/taskModel');
+const User = require('../models/userModel');
 const ApiError = require('../utils/apiError');
 
 const isProjectMember = (project, userId) =>
@@ -65,4 +66,31 @@ exports.deleteProject = asyncHandler(async (req, res, next) => {
   await Task.deleteMany({ project: req.project._id });
   await req.project.deleteOne();
   res.status(204).send();
+});
+
+exports.addMember = asyncHandler(async (req, res, next) => {
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) {
+    return next(new ApiError('No user found with this email', 404));
+  }
+
+  if (isProjectMember(req.project, user._id)) {
+    return next(new ApiError('User is already a project member', 400));
+  }
+
+  req.project.members.push(user._id);
+  await req.project.save();
+  res.status(201).json({ data: req.project });
+});
+
+exports.removeMember = asyncHandler(async (req, res, next) => {
+  const { userId } = req.params;
+
+  if (!isProjectMember(req.project, userId)) {
+    return next(new ApiError('This user is not a member of the project', 404));
+  }
+
+  req.project.members = req.project.members.filter((id) => id.toString() !== userId);
+  await req.project.save();
+  res.status(200).json({ data: req.project });
 });
