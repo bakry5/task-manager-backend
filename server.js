@@ -10,6 +10,7 @@ const globalError = require('./middlewares/errorMiddleware');
 const dbConnection = require('./config/database');
 
 const authRoute = require('./routes/authRoute');
+const projectRoute = require('./routes/projectRoute');
 
 if (process.env.NODE_ENV !== 'test') {
   dbConnection();
@@ -25,6 +26,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 app.use('/api/v1/auth', authRoute);
+app.use('/api/v1/projects', projectRoute);
 
 app.all('*', (req, res, next) => {
   next(new ApiError(`Can't find this route: ${req.originalUrl}`, 400));
