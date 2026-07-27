@@ -1,0 +1,68 @@
+const asyncHandler = require('express-async-handler');
+const Project = require('../models/projectModel');
+const Task = require('../models/taskModel');
+const ApiError = require('../utils/apiError');
+
+const isProjectMember = (project, userId) =>
+  project.members.some((memberId) => memberId.toString() === userId.toString());
+
+exports.isProjectMember = isProjectMember;
+
+const canManageProject = (project, user) =>
+  user.role === 'admin' || project.owner.toString() === user._id.toString();
+
+exports.createProject = asyncHandler(async (req, res) => {
+  const project = await Project.create({
+    name: req.body.name,
+    description: req.body.description,
+    owner: req.user._id,
+    members: [req.user._id],
+  });
+
+  res.status(201).json({ data: project });
+});
+
+exports.getProjects = asyncHandler(async (req, res) => {
+  const filter = req.user.role === 'admin' ? {} : { members: req.user._id };
+  const projects = await Project.find(filter).sort('-createdAt');
+  res.status(200).json({ results: projects.length, data: projects });
+});
+
+exports.loadProject = asyncHandler(async (req, res, next) => {
+  const project = await Project.findById(req.params.projectId);
+  if (!project) {
+    return next(new ApiError('No project found with this id', 404));
+  }
+
+  if (req.user.role !== 'admin' && !isProjectMember(project, req.user._id)) {
+    return next(new ApiError('You do not have access to this project', 403));
+  }
+
+  req.project = project;
+  next();
+});
+
+exports.getProject = asyncHandler(async (req, res) => {
+  res.status(200).json({ data: req.project });
+});
+
+exports.updateProject = asyncHandler(async (req, res, next) => {
+  if (!canManageProject(req.project, req.user)) {
+    return next(new ApiError('You are not allowed to update this project', 403));
+  }
+
+  if (req.body.name !== undefined) req.project.name = req.body.name;
+  if (req.body.description !== undefined) req.project.description = req.body.description;
+  await req.project.save();
+  res.status(200).json({ data: req.project });
+});
+
+exports.deleteProject = asyncHandler(async (req, res, next) => {
+  if (!canManageProject(req.project, req.user)) {
+    return next(new ApiError('You are not allowed to delete this project', 403));
+  }
+
+  await Task.deleteMany({ project: req.project._id });
+  await req.project.deleteOne();
+  res.status(204).send();
+});
