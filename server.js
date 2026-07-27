@@ -9,6 +9,8 @@ const ApiError = require('./utils/apiError');
 const globalError = require('./middlewares/errorMiddleware');
 const dbConnection = require('./config/database');
 
+const authRoute = require('./routes/authRoute');
+
 if (process.env.NODE_ENV !== 'test') {
   dbConnection();
 }
@@ -21,6 +23,8 @@ app.use(express.json());
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
+
+app.use('/api/v1/auth', authRoute);
 
 app.all('*', (req, res, next) => {
   next(new ApiError(`Can't find this route: ${req.originalUrl}`, 400));
