@@ -3,6 +3,8 @@ const Task = require('../models/taskModel');
 const ApiError = require('../utils/apiError');
 const { isProjectMember } = require('./projectService');
 
+const userFields = 'name email role';
+
 exports.createTask = asyncHandler(async (req, res, next) => {
   if (req.body.assignee && !isProjectMember(req.project, req.body.assignee)) {
     return next(new ApiError('Assignee must be a member of this project', 400));
@@ -19,6 +21,9 @@ exports.createTask = asyncHandler(async (req, res, next) => {
     creator: req.user._id,
   });
 
+  await task.populate('creator', userFields);
+  await task.populate('assignee', userFields);
+
   res.status(201).json({ data: task });
 });
 
@@ -28,7 +33,10 @@ exports.getTasks = asyncHandler(async (req, res) => {
   if (req.query.priority) filter.priority = req.query.priority;
   if (req.query.assignee) filter.assignee = req.query.assignee;
 
-  const tasks = await Task.find(filter).sort('-createdAt');
+  const tasks = await Task.find(filter)
+    .sort('-createdAt')
+    .populate('creator', userFields)
+    .populate('assignee', userFields);
   res.status(200).json({ results: tasks.length, data: tasks });
 });
 
@@ -42,6 +50,8 @@ exports.loadTask = asyncHandler(async (req, res, next) => {
 });
 
 exports.getTask = asyncHandler(async (req, res) => {
+  await req.task.populate('creator', userFields);
+  await req.task.populate('assignee', userFields);
   res.status(200).json({ data: req.task });
 });
 
@@ -67,6 +77,8 @@ exports.updateTask = asyncHandler(async (req, res, next) => {
   });
 
   await req.task.save();
+  await req.task.populate('creator', userFields);
+  await req.task.populate('assignee', userFields);
   res.status(200).json({ data: req.task });
 });
 

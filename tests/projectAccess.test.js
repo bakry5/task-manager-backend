@@ -17,6 +17,7 @@ describe('Project access control', () => {
     owner: memberId,
     members: [memberId],
   });
+  project.populate = jest.fn().mockResolvedValue(project);
 
   afterEach(() => jest.restoreAllMocks());
 

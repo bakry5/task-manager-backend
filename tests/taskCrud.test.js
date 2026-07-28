@@ -17,6 +17,7 @@ describe('Task creation', () => {
     owner: memberId,
     members: [memberId],
   });
+  project.populate = jest.fn().mockResolvedValue(project);
 
   afterEach(() => jest.restoreAllMocks());
 
@@ -27,7 +28,11 @@ describe('Task creation', () => {
 
   test('a project member can create a task', async () => {
     jest.spyOn(Project, 'findById').mockResolvedValue(project);
-    jest.spyOn(Task, 'create').mockResolvedValue({ _id: 'task1', title: 'Ship feature' });
+    jest.spyOn(Task, 'create').mockResolvedValue({
+      _id: 'task1',
+      title: 'Ship feature',
+      populate: jest.fn().mockResolvedValue(true),
+    });
     const token = authAs(memberId);
 
     const res = await request(app)
@@ -52,7 +57,11 @@ describe('Task creation', () => {
 
   test('a browser-sent Priority header does not affect body validation (regression)', async () => {
     jest.spyOn(Project, 'findById').mockResolvedValue(project);
-    jest.spyOn(Task, 'create').mockResolvedValue({ _id: 'task1', title: 'Ship feature' });
+    jest.spyOn(Task, 'create').mockResolvedValue({
+      _id: 'task1',
+      title: 'Ship feature',
+      populate: jest.fn().mockResolvedValue(true),
+    });
     const token = authAs(memberId);
 
     const res = await request(app)
