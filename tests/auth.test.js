@@ -9,7 +9,7 @@ const app = require('../server');
 describe('POST /api/v1/auth/signup', () => {
   afterEach(() => jest.clearAllMocks());
 
-  test('creates a user and returns a token', async () => {
+  test('creates a user and sets an httpOnly cookie', async () => {
     User.findOne.mockResolvedValue(null);
     User.create.mockResolvedValue({
       _id: '64f000000000000000000001',
@@ -24,7 +24,7 @@ describe('POST /api/v1/auth/signup', () => {
     });
 
     expect(res.status).toBe(201);
-    expect(res.body.token).toBeDefined();
+    expect(res.headers['set-cookie'][0]).toMatch(/^token=.*HttpOnly/);
     expect(res.body.data.email).toBe('test@example.com');
   });
 
@@ -80,7 +80,7 @@ describe('POST /api/v1/auth/login', () => {
     expect(res.status).toBe(401);
   });
 
-  test('logs in with correct credentials', async () => {
+  test('logs in with correct credentials and sets an httpOnly cookie', async () => {
     const fakeUser = {
       _id: '64f000000000000000000001',
       email: 'test@example.com',
@@ -94,13 +94,21 @@ describe('POST /api/v1/auth/login', () => {
       .send({ email: 'test@example.com', password: 'password123' });
 
     expect(res.status).toBe(200);
-    expect(res.body.token).toBeDefined();
+    expect(res.headers['set-cookie'][0]).toMatch(/^token=.*HttpOnly/);
   });
 });
 
 describe('GET /api/v1/auth/me', () => {
-  test('rejects requests without a token', async () => {
+  test('rejects requests without a token cookie', async () => {
     const res = await request(app).get('/api/v1/auth/me');
     expect(res.status).toBe(401);
+  });
+});
+
+describe('POST /api/v1/auth/logout', () => {
+  test('clears the token cookie', async () => {
+    const res = await request(app).post('/api/v1/auth/logout');
+    expect(res.status).toBe(200);
+    expect(res.headers['set-cookie'][0]).toMatch(/^token=;/);
   });
 });

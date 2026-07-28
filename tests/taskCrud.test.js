@@ -22,7 +22,7 @@ describe('Task creation', () => {
 
   const authAs = (userId, role = 'member') => {
     jest.spyOn(User, 'findById').mockResolvedValue({ _id: userId, role });
-    return `Bearer ${createToken(userId)}`;
+    return `token=${createToken(userId)}`;
   };
 
   test('a project member can create a task', async () => {
@@ -32,7 +32,7 @@ describe('Task creation', () => {
 
     const res = await request(app)
       .post(`/api/v1/projects/${projectId}/tasks`)
-      .set('Authorization', token)
+      .set('Cookie', token)
       .send({ title: 'Ship feature', priority: 'High' });
 
     expect(res.status).toBe(201);
@@ -44,7 +44,7 @@ describe('Task creation', () => {
 
     const res = await request(app)
       .post(`/api/v1/projects/${projectId}/tasks`)
-      .set('Authorization', token)
+      .set('Cookie', token)
       .send({ title: 'Ship feature', priority: 'Urgent' });
 
     expect(res.status).toBe(400);
@@ -57,7 +57,7 @@ describe('Task creation', () => {
 
     const res = await request(app)
       .post(`/api/v1/projects/${projectId}/tasks`)
-      .set('Authorization', token)
+      .set('Cookie', token)
       .set('Priority', 'u=1, i')
       .send({ title: 'Ship feature', priority: 'Low' });
 
@@ -70,7 +70,7 @@ describe('Task creation', () => {
 
     const res = await request(app)
       .post(`/api/v1/projects/${projectId}/tasks`)
-      .set('Authorization', token)
+      .set('Cookie', token)
       .send({ title: 'Ship feature' });
 
     expect(res.status).toBe(403);

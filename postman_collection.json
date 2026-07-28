@@ -1,14 +1,26 @@
 {
   "info": {
     "name": "Task Manager API",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Auth uses an httpOnly cookie. In Postman, enable cookie jar (default) and run Signup or Login first - the token cookie is then sent automatically with every following request in this collection."
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:8000/api/v1" },
-    { "key": "token", "value": "" },
-    { "key": "projectId", "value": "" },
-    { "key": "taskId", "value": "" },
-    { "key": "userId", "value": "" }
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000/api/v1"
+    },
+    {
+      "key": "projectId",
+      "value": ""
+    },
+    {
+      "key": "taskId",
+      "value": ""
+    },
+    {
+      "key": "userId",
+      "value": ""
+    }
   ],
   "item": [
     {
@@ -18,7 +30,12 @@
           "name": "Signup",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"Admin User\",\n  \"email\": \"admin@example.com\",\n  \"password\": \"password123\"\n}"
@@ -30,7 +47,12 @@
           "name": "Login",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"password123\"\n}"
@@ -39,10 +61,18 @@
           }
         },
         {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/auth/logout"
+          }
+        },
+        {
           "name": "Get Me",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [],
             "url": "{{baseUrl}}/auth/me"
           }
         }
@@ -56,8 +86,10 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -70,7 +102,7 @@
           "name": "List My Projects",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [],
             "url": "{{baseUrl}}/projects"
           }
         },
@@ -78,7 +110,7 @@
           "name": "Get Project",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [],
             "url": "{{baseUrl}}/projects/{{projectId}}"
           }
         },
@@ -87,8 +119,10 @@
           "request": {
             "method": "PUT",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -101,7 +135,7 @@
           "name": "Delete Project",
           "request": {
             "method": "DELETE",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [],
             "url": "{{baseUrl}}/projects/{{projectId}}"
           }
         },
@@ -110,8 +144,10 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -124,7 +160,7 @@
           "name": "Remove Member",
           "request": {
             "method": "DELETE",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [],
             "url": "{{baseUrl}}/projects/{{projectId}}/members/{{userId}}"
           }
         }
@@ -138,8 +174,10 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -152,7 +190,7 @@
           "name": "List Tasks (filter by status/priority/assignee)",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [],
             "url": "{{baseUrl}}/projects/{{projectId}}/tasks?status=To Do&priority=High"
           }
         },
@@ -160,7 +198,7 @@
           "name": "Get Task",
           "request": {
             "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [],
             "url": "{{baseUrl}}/projects/{{projectId}}/tasks/{{taskId}}"
           }
         },
@@ -169,8 +207,10 @@
           "request": {
             "method": "PUT",
             "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
@@ -183,7 +223,7 @@
           "name": "Delete Task",
           "request": {
             "method": "DELETE",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "header": [],
             "url": "{{baseUrl}}/projects/{{projectId}}/tasks/{{taskId}}"
           }
         }

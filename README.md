@@ -7,7 +7,7 @@ REST API for a team task board. Users create projects, invite members with
 
 - Node.js / Express
 - MongoDB / Mongoose
-- JWT authentication (Bearer token)
+- JWT authentication via httpOnly cookie
 - express-validator for request validation
 - Jest + Supertest for automated tests
 
@@ -99,11 +99,13 @@ schemas and stay free of business logic.
 ## API Overview
 
 All routes are prefixed with `/api/v1`. Every route below except
-signup/login requires `Authorization: Bearer <token>`.
+signup/login requires a valid `token` cookie (set automatically after
+signup/login - see Authentication below).
 
 **Auth**
 - `POST /auth/signup`
 - `POST /auth/login`
+- `POST /auth/logout`
 - `GET /auth/me`
 
 **Projects**
@@ -126,12 +128,16 @@ A ready-to-import Postman collection is at `postman_collection.json`.
 
 ## Design Decisions
 
-- **Bearer-token auth instead of cookies.** With the frontend and backend
-  deployed as separate origins (e.g. two Vercel projects), cookie-based
-  auth runs into cross-site cookie restrictions (`SameSite`, Safari ITP)
-  and CORS credential edge cases. A stateless Bearer token avoids that
-  class of problem entirely and keeps the API easy to test directly with
-  Postman/curl.
+- **httpOnly cookie auth.** `signup`/`login` set the JWT in an `httpOnly`
+  cookie (never returned in the response body), and `protect` reads it
+  from `req.cookies.token`. `POST /auth/logout` clears it. This keeps the
+  token out of reach of any client-side JavaScript (XSS-safer than
+  `localStorage`). Because the frontend and backend can be deployed as
+  separate origins, `cors()` is configured with an explicit `CLIENT_URL`
+  origin and `credentials: true`, and the cookie itself uses
+  `secure: true` + `sameSite: 'none'` in production so it still gets sent
+  cross-site. `CLIENT_URL` must exactly match the deployed frontend's
+  origin for this to work.
 - **`role` is a single, global field on the User model** (`admin` or
   `member`), not a per-project setting. This keeps the model and the
   authorization checks simple: `authService.allowedTo('admin')` is a

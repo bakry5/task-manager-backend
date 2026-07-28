@@ -22,7 +22,7 @@ describe('Project access control', () => {
 
   const authAs = (userId, role = 'member') => {
     jest.spyOn(User, 'findById').mockResolvedValue({ _id: userId, role });
-    return `Bearer ${createToken(userId)}`;
+    return `token=${createToken(userId)}`;
   };
 
   test('a project member can view the project', async () => {
@@ -31,7 +31,7 @@ describe('Project access control', () => {
 
     const res = await request(app)
       .get(`/api/v1/projects/${projectId}`)
-      .set('Authorization', token);
+      .set('Cookie', token);
 
     expect(res.status).toBe(200);
     expect(res.body.data.name).toBe('Team Board');
@@ -43,7 +43,7 @@ describe('Project access control', () => {
 
     const res = await request(app)
       .get(`/api/v1/projects/${projectId}`)
-      .set('Authorization', token);
+      .set('Cookie', token);
 
     expect(res.status).toBe(403);
   });
@@ -54,7 +54,7 @@ describe('Project access control', () => {
 
     const res = await request(app)
       .get(`/api/v1/projects/${projectId}`)
-      .set('Authorization', token);
+      .set('Cookie', token);
 
     expect(res.status).toBe(200);
   });
