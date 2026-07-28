@@ -5,6 +5,13 @@ const User = require('../models/userModel');
 const ApiError = require('../utils/apiError');
 const createToken = require('../utils/createToken');
 
+const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+};
+
 exports.signup = asyncHandler(async (req, res, next) => {
   const existingUser = await User.findOne({ email: req.body.email });
   if (existingUser) {
@@ -18,7 +25,8 @@ exports.signup = asyncHandler(async (req, res, next) => {
   });
 
   const token = createToken(user._id);
-  res.status(201).json({ data: user, token });
+  res.cookie('token', token, cookieOptions);
+  res.status(201).json({ data: user });
 });
 
 exports.login = asyncHandler(async (req, res, next) => {
@@ -30,7 +38,14 @@ exports.login = asyncHandler(async (req, res, next) => {
   }
 
   const token = createToken(user._id);
-  res.status(200).json({ data: user, token });
+  res.cookie('token', token, cookieOptions);
+  res.status(200).json({ data: user });
+});
+
+exports.logout = asyncHandler(async (req, res) => {
+  const { maxAge, ...clearOptions } = cookieOptions;
+  res.clearCookie('token', clearOptions);
+  res.status(200).json({ status: 'Success' });
 });
 
 exports.getMe = asyncHandler(async (req, res) => {
@@ -38,11 +53,7 @@ exports.getMe = asyncHandler(async (req, res) => {
 });
 
 exports.protect = asyncHandler(async (req, res, next) => {
-  let token;
-
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-    token = req.headers.authorization.split(' ')[1];
-  }
+  const token = req.cookies.token;
 
   if (!token) {
     return next(new ApiError('You are not logged in, please login to get access', 401));
