@@ -24,15 +24,25 @@ router
 router
   .route('/:projectId')
   .get(projectIdValidator, projectService.loadProject, projectService.getProject)
-  .put(updateProjectValidator, projectService.loadProject, projectService.updateProject)
-  .delete(projectIdValidator, projectService.loadProject, projectService.deleteProject);
+  .put(
+    updateProjectValidator,
+    projectService.loadProject,
+    projectService.requireProjectManager,
+    projectService.updateProject
+  )
+  .delete(
+    projectIdValidator,
+    projectService.loadProject,
+    projectService.requireProjectManager,
+    projectService.deleteProject
+  );
 
 router
   .route('/:projectId/members')
   .post(
     addMemberValidator,
     projectService.loadProject,
-    authService.allowedTo('admin'),
+    projectService.requireProjectManager,
     projectService.addMember
   );
 
@@ -41,7 +51,7 @@ router
   .delete(
     removeMemberValidator,
     projectService.loadProject,
-    authService.allowedTo('admin'),
+    projectService.requireProjectManager,
     projectService.removeMember
   );
 

@@ -14,6 +14,13 @@ exports.isProjectMember = isProjectMember;
 const canManageProject = (project, user) =>
   user.role === 'admin' || project.owner.toString() === user._id.toString();
 
+exports.requireProjectManager = (req, res, next) => {
+  if (!canManageProject(req.project, req.user)) {
+    return next(new ApiError('Only the project owner or an admin can perform this action', 403));
+  }
+  next();
+};
+
 exports.createProject = asyncHandler(async (req, res) => {
   const project = await Project.create({
     name: req.body.name,
@@ -57,11 +64,7 @@ exports.getProject = asyncHandler(async (req, res) => {
   res.status(200).json({ data: req.project });
 });
 
-exports.updateProject = asyncHandler(async (req, res, next) => {
-  if (!canManageProject(req.project, req.user)) {
-    return next(new ApiError('You are not allowed to update this project', 403));
-  }
-
+exports.updateProject = asyncHandler(async (req, res) => {
   if (req.body.name !== undefined) req.project.name = req.body.name;
   if (req.body.description !== undefined) req.project.description = req.body.description;
   await req.project.save();
@@ -70,11 +73,7 @@ exports.updateProject = asyncHandler(async (req, res, next) => {
   res.status(200).json({ data: req.project });
 });
 
-exports.deleteProject = asyncHandler(async (req, res, next) => {
-  if (!canManageProject(req.project, req.user)) {
-    return next(new ApiError('You are not allowed to delete this project', 403));
-  }
-
+exports.deleteProject = asyncHandler(async (req, res) => {
   await Task.deleteMany({ project: req.project._id });
   await req.project.deleteOne();
   res.status(204).send();
