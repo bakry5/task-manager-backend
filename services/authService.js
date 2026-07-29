@@ -5,10 +5,12 @@ const User = require('../models/userModel');
 const ApiError = require('../utils/apiError');
 const createToken = require('../utils/createToken');
 
+const isDeployed = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
+
 const cookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  secure: isDeployed,
+  sameSite: isDeployed ? 'none' : 'lax',
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 
