@@ -33,7 +33,7 @@ if (process.env.NODE_ENV === 'development') {
 app.use('/api/v1/auth', authRoute);
 app.use('/api/v1/projects', projectRoute);
 
-app.use('/', (req, res) => {
+app.get('/', (req, res) => {
   res.send('server is running');
 });
 
